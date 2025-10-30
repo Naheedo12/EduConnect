@@ -2,32 +2,43 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
-    protected $fillable = ['name', 'email', 'password', 'role'];
+    use HasApiTokens, HasFactory, Notifiable;
 
-    public function taughtCourses() {
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    // One-to-Many : Enseignant -> Courses
+    public function taughtCourses()
+    {
         return $this->hasMany(Course::class, 'teacher_id');
     }
 
-    public function enrolledCourses() {
-        return $this->belongsToMany(Course::class, 'course_user')->withTimestamps();
-    }
-
-    public function isAdmin() {
-        return $this->role === 'admin';
-    }
-
-    public function isTeacher() {
-        return $this->role === 'teacher';
-    }
-
-    public function isStudent() {
-        return $this->role === 'student';
+    // Many-to-Many : Étudiant -> Courses
+    public function enrolledCourses()
+    {
+        return $this->belongsToMany(Course::class, 'course_user')
+                    ->withTimestamps()
+                    ->withPivot('enrolled_at');
     }
 }
-

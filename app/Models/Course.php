@@ -7,14 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Course extends Model
 {
-    protected $fillable = ['title', 'description', 'teacher_id'];
+    use HasFactory;
 
-    public function teacher() {
+    protected $fillable = [
+        'title',
+        'description',
+        'teacher_id',
+    ];
+
+    // Enseignant qui a creer le cours
+    public function teacher()
+    {
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    public function students() {
-        return $this->belongsToMany(User::class, 'course_user')->withTimestamps();
+    // Etudiants inscrits au cours
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'course_user')
+                    ->withTimestamps()
+                    ->withPivot('enrolled_at');
     }
 }
-
