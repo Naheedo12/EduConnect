@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    public function index()
+    {
+        return response()->json(User::all(), 200);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -20,6 +25,7 @@ class UserController extends Controller
         $validated['password'] = bcrypt($validated['password']);
 
         $user = User::create($validated);
+
         return response()->json($user, 201);
     }
 
@@ -27,6 +33,7 @@ class UserController extends Controller
     public function taughtCourses($id)
     {
         $user = User::findOrFail($id);
+
         return $user->taughtCourses;
     }
 
@@ -34,6 +41,7 @@ class UserController extends Controller
     public function enrolledCourses($id)
     {
         $user = User::findOrFail($id);
+
         return $user->enrolledCourses;
     }
 }
