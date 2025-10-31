@@ -29,6 +29,34 @@ class UserController extends Controller
         return response()->json($user, 201);
     }
 
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string',
+            'email' => 'sometimes|email|unique:users,email,'.$user->id,
+            'password' => 'sometimes|string|min:6',
+            'role' => 'sometimes|in:admin,teacher,student',
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return response()->json($user, 200);
+    }
+
+    public function destroy($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return response()->json(['message' => 'Utilisateur supprimé avec succès !'], 200);
+    }
+
     // Cours learned par teacher
     public function taughtCourses($id)
     {
@@ -42,6 +70,9 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        return $user->enrolledCourses;
+        // cours inscrits
+        $courses = $user->enrolledCourses()->get();
+
+        return response()->json($courses);
     }
 }

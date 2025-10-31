@@ -2,26 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\Course;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class EnrollmentController extends Controller
 {
-    // Inscrire etudiant to un cours
-    public function enroll(Request $request)
+    public function enroll(Request $request, $id)
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'course_id' => 'required|exists:courses,id',
         ]);
 
+        $course = Course::findOrFail($id);
         $user = User::findOrFail($validated['user_id']);
-        $course = Course::findOrFail($validated['course_id']);
 
-        // Ajouter l'inscription
+        // student deja inscrit ??
+        if ($user->enrolledCourses()->where('course_id', $id)->exists()) {
+            return response()->json(['message' => 'Étudiant déjà inscrit à ce cours'], 400);
+        }
+
+        // Inscrire student
         $user->enrolledCourses()->attach($course->id);
 
-        return response()->json(['message' => 'Inscription réussie !']);
+        return response()->json(['message' => 'Inscription réussie !'], 201);
     }
 }
